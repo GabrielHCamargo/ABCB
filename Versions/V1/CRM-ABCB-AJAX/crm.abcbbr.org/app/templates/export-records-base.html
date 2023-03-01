@@ -1,0 +1,159 @@
+<title>Exportar Registros &lsaquo; ABCB</title>
+
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="container">
+    <!-- BARRA LATERAL ESQUERDA -->
+    <aside>
+        <div class="top">
+            <div class="logo">
+                <img class="logo">
+            </div>
+            <div class="close" id="close-btn">
+                <span class="material-icons-sharp">close</span>
+            </div>
+        </div>
+
+        <div class="sidebar">
+            <a href="#">
+                <span class="material-icons-sharp">grid_view</span>
+                <h3>Visão Geral</h3>
+            </a>
+            <a href="#">
+                <i class="las la-certificate"></i>
+                <h3>Autenticar</h3>
+            </a>
+            <a href="/records" class="active">
+                <i class="las la-folder"></i>
+                <h3>Registros</h3>
+            </a>
+            <a href="#">
+                <i class="las la-file-signature"></i>
+                <h3>Contratos</h3>
+            </a>
+            <a href="#">
+                <i class="las la-cog"></i>
+                <h3>Configurações</h3>
+            </a>
+            <a href="/logout">
+                <i class="las la-sign-out-alt"></i>
+                <h3>Logout</h3>
+            </a>
+        </div>
+    </aside>
+    <!-- FIM DA BARRA LATERAL ESQUERDA -->
+
+    <!-- CONTEÚDO PRINCIPAL -->
+    <main>
+
+        <h1>Exportar Registros</h1>
+
+        {% for message in get_flashed_messages() %}
+        <div class="alert alert-dark">
+            {{ message }}
+        </div>
+        {% endfor %}
+
+        <div class="input-data">
+
+            <h2>Exportar Base INSS</h2>
+
+            <div class="form">
+                <h2>Escolher Parâmetros </h2>
+
+                <form method="POST" action="/export/export-base">
+                    {{ form.csrf_token }}
+                    <div class="input-group">
+
+                        <div class="input-box">
+                            <label for="start">A partir de</label>
+                            {{ form.start }}
+                        </div>
+
+                        <div class="input-box">
+                            <label for="end">Até</label>
+                            {{ form.end }}
+                        </div>
+
+                        <div class="input-box select">
+                            <label for="records">Tipos de Registros</label>
+                            {{ form.records }}
+                        </div>
+
+                    </div>
+
+
+                    <div class="send-button">
+                        <button type="submit"><span>Procurar</span></button>
+                    </div>
+                </form>
+            </div>
+            {% if exporteds %}
+            <div class="box-table">
+                <h2>Histórico de Base INNS Exportados</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Data</th>
+                            <th>Hora</th>
+                            <th>Solicitante</th>
+                            <th>Período</th>
+                            <th>Ação</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for exported in exporteds %}
+                        <tr>
+                            <td>{{ exported.id }}</td>
+                            <td class="danger">{{ exported.date }}</td>
+                            <td>{{ exported.hour }}</td>
+                            <td>{{ exported.requester }}</td>
+                            <td>{{ exported.period }}</td>
+                            <td><a href="/export/historic/export-base/{{ exported.token }}/{{ exported.folder }}"><i class="las la-download"></i></a></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% endif %}
+
+        </div>
+
+
+
+    </main>
+    <!-- FIM DO CONTEÚDO PRINCIPAL -->
+
+    <!-- CONTEÚDO DO LADO DIREITO -->
+    <div class="right">
+        <!-- INÍCIO TOPO -->
+        <div class="top">
+            <button id="menu-btn">
+                <i class="las la-bars"></i>
+            </button>
+            <div class="theme-toggler">
+                <span class="material-icons-sharp">light_mode</span>
+                <span class="material-icons-sharp active">dark_mode</span>
+            </div>
+            <div class="profile">
+                <div class="info">
+                    {% if current_user.is_authenticated %}
+                    <p>Olá, <b>{{ current_user.name }}</b></p>
+                    <small class="text-muted">{{ current_user.hierarchy }}</small>
+                    {% endif %}
+                </div>
+                <div class="profile-photo">
+                    <img src="{{ url_for('static', filename='images/profile.webp') }}">>
+                </div>
+            </div>
+        </div>
+        <!-- FIM TOPO -->
+
+    </div>
+    <!-- FIM DO CONTEÚDO DO LADO DIREITO -->
+</div>
+
+{% endblock %}

@@ -1,0 +1,115 @@
+<title>Exportar Registros &lsaquo; ABCB</title>
+
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="container">
+    <!-- BARRA LATERAL ESQUERDA -->
+    <aside>
+        <div class="top">
+            <div class="logo">
+                <img class="logo">
+            </div>
+            <div class="close" id="close-btn">
+                <span class="material-icons-sharp">close</span>
+            </div>
+        </div>
+
+        <div class="sidebar">
+            <a href="#">
+                <span class="material-icons-sharp">grid_view</span>
+                <h3>Visão Geral</h3>
+            </a>
+            <a href="#">
+                <i class="las la-certificate"></i>
+                <h3>Autenticar</h3>
+            </a>
+            <a href="/records" class="active">
+                <i class="las la-folder"></i>
+                <h3>Registros</h3>
+            </a>
+            <a href="#">
+                <i class="las la-file-signature"></i>
+                <h3>Contratos</h3>
+            </a>
+            <a href="#">
+                <i class="las la-cog"></i>
+                <h3>Configurações</h3>
+            </a>
+            <a href="/logout">
+                <i class="las la-sign-out-alt"></i>
+                <h3>Logout</h3>
+            </a>
+        </div>
+    </aside>
+    <!-- FIM DA BARRA LATERAL ESQUERDA -->
+
+    <!-- CONTEÚDO PRINCIPAL -->
+    <main>
+        <h1>Tipos de Registros para Exportação</h1>
+
+        <div class="card-trades">
+            <!-- BASE -->
+            <div>
+                <a href="/export-records/base">
+                    <span class="material-icons-sharp">drive_file_move</span>
+                    <div class="middle">
+                        <div class="left">
+                            <h3>Exportar Base INSS</h3>
+                        </div>
+                    </div>
+                    <small class="text-muted">Clique aqui para Acessar</small>
+                </a>
+            </div>
+            <!-- FIM BASE -->
+            <!-- DOCUMENTOS -->
+            <div>
+                <a href="/export-records/document">
+                    <span class="material-icons-sharp">folder_shared</span>
+                    <div class="middle">
+                        <div class="left">
+                            <h3>Exportar Documentos</h3>
+                        </div>
+                    </div>
+                    <small class="text-muted">Clique aqui para Acessar</small>
+                </a>
+            </div>
+            <!-- FIM DOCUMENTOS -->
+        </div>
+
+    </main>
+    <!-- FIM DO CONTEÚDO PRINCIPAL -->
+
+    <!-- CONTEÚDO DO LADO DIREITO -->
+    <div class="right">
+        <!-- INÍCIO TOPO -->
+        <div class="top">
+            <button id="menu-btn">
+                <i class="las la-bars"></i>
+            </button>
+            <div class="theme-toggler">
+                <span class="material-icons-sharp">light_mode</span>
+                <span class="material-icons-sharp active">dark_mode</span>
+            </div>
+            <div class="profile">
+                <div class="info">
+                    {% if current_user.is_authenticated %}
+                        <p>Olá, <b>{{ current_user.name }}</b></p> 
+                    <small class="text-muted">{{ current_user.hierarchy }}</small>
+                    {% endif %}
+                    
+                </div>
+                <div class="profile-photo">
+                    
+                    <img src="{{ url_for('static', filename='images/profile.webp') }}">>
+                </div>
+            </div>
+        </div>
+        <!-- FIM TOPO -->
+    </div>
+    <!-- FIM DO CONTEÚDO DO LADO DIREITO -->
+</div>
+
+
+{% endblock %}

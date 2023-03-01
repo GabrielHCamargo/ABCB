@@ -1,0 +1,27 @@
+# GET Customers
+@router.get("/", status_code=status.HTTP_200_OK)
+async def get_customers(db: AsyncSession = Depends(get_session)):
+    async with db as session:
+        query_customers = select(CustomerModel)
+        query_benefit = select(BenefitModel)
+        result_customers = await session.execute(query_customers)
+        result_benefit = await session.execute(query_benefit)
+        customers = result_customers.scalars().all()
+
+        # Agrupar benefícios por cliente
+        benefits_by_customer = {}
+        for benefit in result_benefit.scalars().all():
+            if benefit.customer_id not in benefits_by_customer:
+                benefits_by_customer[benefit.customer_id] = []
+            benefits_by_customer[benefit.customer_id].append(benefit)
+
+        # Criar lista de clientes com benefícios correspondentes
+        customers_with_benefits = []
+        for customer in customers:
+            benefits = benefits_by_customer.get(customer.id, [])
+            benefits_dict = [b.dict() for b in benefits]
+            customer_dict = customer.dict()
+            customer_dict["benefits"] = benefits_dict
+            customers_with_benefits.append(customer_dict)
+
+        return customers_with_benefits

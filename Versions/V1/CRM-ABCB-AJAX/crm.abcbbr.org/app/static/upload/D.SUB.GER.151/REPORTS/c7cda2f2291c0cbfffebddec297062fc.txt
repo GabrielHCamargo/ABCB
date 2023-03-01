@@ -1,0 +1,16 @@
+CLIENTES REGISTRADOS: 30135
+------------------------------
+CLIENTES NAO REGISTRADOS: 0
+------------------------------
+
+BENEFICIOS REGISTRADOS: 30144
+------------------------------
+BENEFICIOS NAO REGISTRADOS: 0
+------------------------------
+
+
+LISTA DE CLIENTES NAO REGISTRADOS:
+
+------------------------------
+
+LISTA DE BENEFICIOS NAO REGISTRADOS:

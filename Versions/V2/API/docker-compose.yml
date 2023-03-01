@@ -1,0 +1,114 @@
+version: '3'
+
+services:
+  api_gateway:
+    build: ./api_gateway
+    ports:
+      - "80:80"
+    depends_on:
+      - search
+      - file_manager
+      - data_processing
+      - customer_manager
+      - customer
+      - benefit
+      - document
+      - discount
+      - ticket
+      - customer_event
+      - report_manager
+      - report_generator
+      - user_manager
+      - event
+      - notifications
+    environment:
+      - SEARCH_URL=http://0.0.0.0:8010
+      - FILE_MANAGER_URL=http://0.0.0.0:8020
+      - DATA_PROCESSING_URL=http://0.0.0.0:8021
+      - CUSTOMER_MANAGER_URL=http://0.0.0.0:8030
+      - CUSTOMER_URL=http://0.0.0.0:8031
+      - BENEFIT_URL=http://0.0.0.0:8032
+      - DOCUMENT_URL=http://0.0.0.0:8033
+      - DISCOUNT_URL=http://0.0.0.0:8034
+      - TICKET_URL=http://0.0.0.0:8035
+      - CUSTOMER_EVENT_URL=http://0.0.0.0:8036
+      - REPORT_MANAGER_URL=http://0.0.0.0:8040
+      - REPORT_GENERATOR_URL=http://0.0.0.0:8041
+      - USER_MANAGER_URL=http://0.0.0.0:8050
+      - EVENT_URL=http://0.0.0.0:8060
+      - NOTIFICATIONS_URL=http://0.0.0.0:8070
+
+  search:
+    build: ./search
+    ports:
+      - "8010:8000"
+
+  file_manager:
+    build: ./file_manager
+    ports:
+      - "8020:8000"
+
+  data_processing:
+    build: ./data_processing
+    ports:
+      - "8021:8000"
+
+  customer_manager:
+    build: ./customer_manager
+    ports:
+      - "8030:8000"
+  
+  customer:
+    build: ./customer
+    ports:
+      - "8031:8000"
+
+  benefit:
+    build: ./benefit
+    ports:
+      - "8032:8000"
+
+  document:
+    build: ./document
+    ports:
+      - "8033:8000"
+
+  discount:
+    build: ./discount
+    ports:
+      - "8034:8000"
+
+  ticket:
+    build: ./ticket
+    ports:
+      - "8035:8000"
+  
+  customer_event:
+    build: ./customer_event
+    ports:
+      - "8036:8000"
+
+  report_manager:
+    build: ./report_manager
+    ports:
+      - "8040:8000"
+
+  report_generator:
+    build: ./report_generator
+    ports:
+      - "8041:8000"
+
+  user_manager:
+    build: ./user_manager
+    ports:
+      - "8050:8000"
+
+  event:
+    build: ./event
+    ports:
+      - "8060:8000"
+
+  notifications:
+    build: ./notifications
+    ports:
+      - "8070:8000"

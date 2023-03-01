@@ -1,0 +1,279 @@
+<title>Clientes &lsaquo; ABCB</title>
+
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="container">
+    <!-- BARRA LATERAL ESQUERDA -->
+    <aside>
+        <div class="top">
+            <div class="logo">
+                <img class="logo">
+            </div>
+            <div class="close" id="close-btn">
+                <span class="material-icons-sharp">close</span>
+            </div>
+        </div>
+
+        <div class="sidebar">
+            <a href="/dashboard">
+                <span class="material-icons-sharp">grid_view</span>
+                <h3>Visão Geral</h3>
+            </a>
+            <a href="/">
+                <i class="las la-certificate"></i>
+                <h3>Autenticar</h3>
+            </a>
+            <a href="/records" class="active">
+                <i class="las la-folder"></i>
+                <h3>Registros</h3>
+            </a>
+            <a href="/">
+                <i class="las la-file-signature"></i>
+                <h3>Contratos</h3>
+            </a>
+            <a href="/">
+                <i class="las la-cog"></i>
+                <h3>Configurações</h3>
+            </a>
+            <a href="/logout">
+                <i class="las la-sign-out-alt"></i>
+                <h3>Logout</h3>
+            </a>
+        </div>
+    </aside>
+    <!-- FIM DA BARRA LATERAL ESQUERDA -->
+
+    <!-- CONTEÚDO PRINCIPAL -->
+    <main>
+        <h1>Clientes</h1>
+
+        {% for message in get_flashed_messages() %}
+        <div class="alert alert-dark">
+            {{ message }}
+        </div>
+        {% endfor %}
+
+
+        <div class="input-data">
+
+            <h2>Cliente &lsaquo; {{ firts_name }} &lsaquo; <span class="danger">{{ status }}</span> &lsaquo; {{
+                client.institution }}</h2>
+
+            <form method="POST" action="/client-data/update" enctype="multipart/form-data">
+                {{ form.csrf_token }}
+                <div class="form">
+
+                    <h2>Dados Pessoais</h2>
+
+                    <div class="input-group">
+                        <div class="input-box-long">
+                            <label for="name">Nome</label>
+                            <input class="form-control" type="text" name="name" id="name" value="{{ client.name }}">
+                        </div>
+                    </div>
+                    <div class="input-group">
+                        <div class="input-box">
+                            <label for="cpf">CPF</label>
+                            <input class="form-control" type="text" name="cpf" id="cpf" value="{{ client.cpf }}">
+                        </div>
+
+                        <div class="input-box date">
+                            <label for="birth_date">Nascimento</label>
+                            <input class="form-control" type="text" name="birth_date" id="birth_date"
+                                value="{{ client.birth_date }}">
+                        </div>
+
+
+
+                        <div class="input-box phone">
+                            <label for="phone">Telefone</label>
+                            <input class="form-control" type="text" name="phone" id="phone" value="{{ client.phone }}">
+                        </div>
+
+                        <div class="input-box">
+                            <label for="rg">RG</label>
+                            <input class="form-control" type="text" name="rg" id="rg" value="{{ client.rg }}">
+                        </div>
+
+                    </div>
+                    <div class="input-group">
+                        <div class="input-box address">
+                            <label for="address">Endereço</label>
+                            <input class="form-control" type="text" name="address" id="address"
+                                value="{{ client.address }}">
+                        </div>
+                        <div class="input-box">
+                            <label for="neighborhood">Bairro</label>
+                            <input class="form-control" type="text" name="neighborhood" id="neighborhood"
+                                value="{{ client.neighborhood }}">
+                        </div>
+                    </div>
+                    <div class="input-group">
+
+
+                        <div class="input-box cep">
+                            <label for="cep">CEP</label>
+                            <input class="form-control" type="text" name="cep" id="cep" value="{{ client.cep }}">
+                        </div>
+
+
+                        <div class="input-box city">
+                            <label for="city">Cidade</label>
+                            <input class="form-control" type="text" name="city" id="city" value="{{ client.city }}">
+                        </div>
+
+                        <div class="input-box state">
+                            <label for="state">Estado</label>
+                            <input class="form-control" type="text" name="state" id="state" value="{{ client.state }}">
+                        </div>
+
+                        <div class="input-box select">
+                            <label for="status">Status</label>
+                            {{ form.status }}
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <div class="form">
+                    <h2>Documentos &lsaquo; <span class="danger">{{ document }}</span></h2>
+
+                    {% if status_document %}
+                    <div class="send-button">
+                        <a href="/export/export-document/{{ client.cpf }}"><button type="button"><span>Baixar
+                                    Documentos</span></button></a>
+                    </div>
+                    {% else %}
+                    <div class="input-group">
+                        <h3>O nome do arquivo deve ser o CPF do Cliente sem pontuações e no formato .ZIP padrão. <br>
+                            Senhas tornam o arquivo mais seguro, porém, devem ser compartilhadas.</h3>
+                    </div>
+                    <div class="input-group">
+                        <div class="input-box address">
+                            <label for="document">Enviar Documentos</label>
+                            {{form.document(accept="zip,application/zip,application/x-zip,application/x-zip-compressed")}}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                </div>
+
+                {% if benefit %}
+                {% for index, b in enumerate(benefit) %}
+                <div class="form">
+                    <h2>Benefício {{ index + 1 }} &lsaquo; <span class="danger">{{ b.description }}</span></h2>
+                    <div class="input-group">
+                        <div class="input-box">
+                            <label for="nb">Número de Benefício</label>
+                            <input class="form-control" type="text" name="nb" id="nb" value="{{ b.nb }}">
+                        </div>
+
+                        <div class="input-box">
+                            <label for="species">Espécie</label>
+                            <input class="form-control" type="text" name="species" id="species"
+                                value="{{ b.species }}">
+                        </div>
+
+                        <div class="input-box">
+                            <label for="dib">DIB</label>
+                            <input class="form-control" type="text" name="dib" id="dib" value="{{ b.dib }}">
+                        </div>
+
+                        <div class="input-box size-nb">
+                            <label for="bank">Banco</label>
+                            <input class="form-control" type="text" name="bank" id="bank"  value="{{ b.bank }}">
+                        </div>
+
+                        <div class="input-box size-nb">
+                            <label for="agency">Agência</label>
+                            <input class="form-control" type="text" name="agency" id="agency"  value="{{ b.agency }}">
+                        </div>
+
+                        <div class="input-box">
+                            <label for="account">Conta</label>
+                            <input class="form-control" type="text" name="account" id="account"  value="{{ b.account }}">
+                        </div>
+
+                        <div class="input-box size-nb">
+                            <label for="salary">Valor do Benefício</label>
+                            <input class="form-control" type="text" value="{{ b.salary }}" name="salary" id="salary">
+                        </div>
+
+                        <!-- <div class="input-box select">
+                            <label for="status">Status</label>
+                            {{ form.status_benefit(selected=b.status) }}
+                        </div> -->
+                    </div>
+                    
+                </div>
+                {% endfor %}
+                {% endif %}
+
+                <div class="send-button">
+                    <button type="submit"><span>Atualizar</span></button>
+                </div>
+            </form>
+            {% if financial %}
+            <div class="box-table">
+                <h2>Financeiro</h2>
+
+                <table>
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>NB</th>
+                            <th>Mês de Referência</th>
+                            <th>Valor</th>
+                        </tr>
+                    </thead>
+                    {% for f in financial %}
+                    <tbody>
+                        <tr>
+                            <td>1</td>
+                            <td>{{ f.nb }}</td>
+                            <td>{{ f.month }}</td>
+                            <td class="danger">{{ f.discount }}</td>
+                        </tr>
+                    </tbody>
+                    {% endfor %}
+                </table>
+            </div>
+            {% endif %}
+        </div>
+
+    </main>
+    <!-- FIM DO CONTEÚDO PRINCIPAL -->
+
+    <!-- CONTEÚDO DO LADO DIREITO -->
+    <div class="right">
+        <!-- INÍCIO TOPO -->
+        <div class="top">
+            <button id="menu-btn">
+                <i class="las la-bars"></i>
+            </button>
+            <div class="theme-toggler">
+                <span class="material-icons-sharp">light_mode</span>
+                <span class="material-icons-sharp active">dark_mode</span>
+            </div>
+            <div class="profile">
+                <div class="info">
+                    {% if current_user.is_authenticated %}
+                    <p>Olá, <b>{{ current_user.name }}</b></p>
+                    <small class="text-muted">{{ current_user.hierarchy }}</small>
+                    {% endif %}
+                </div>
+                <div class="profile-photo">
+                    <img src="{{ url_for('static', filename='images/profile.webp') }}">>
+                </div>
+            </div>
+        </div>
+        <!-- FIM TOPO -->
+
+    </div>
+    <!-- FIM DO CONTEÚDO DO LADO DIREITO -->
+</div>
+
+{% endblock %}

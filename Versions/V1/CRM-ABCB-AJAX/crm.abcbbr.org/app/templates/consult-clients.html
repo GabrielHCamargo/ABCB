@@ -1,0 +1,123 @@
+<title>Consultar Registros &lsaquo; ABCB</title>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="{{ url_for('static', filename='js/ajax.js') }}"></script>
+
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="container">
+    <!-- BARRA LATERAL ESQUERDA -->
+    <aside>
+        <div class="top">
+            <div class="logo">
+                <img class="logo">
+            </div>
+            <div class="close" id="close-btn">
+                <span class="material-icons-sharp">close</span>
+            </div>
+        </div>
+
+        <div class="sidebar">
+            <a href="/dashboard">
+                <span class="material-icons-sharp">grid_view</span>
+                <h3>Visão Geral</h3>
+            </a>
+            <a href="/">
+                <i class="las la-certificate"></i>
+                <h3>Autenticar</h3>
+            </a>
+            <a href="/records" class="active">
+                <i class="las la-folder"></i>
+                <h3>Registros</h3>
+            </a>
+            <a href="/">
+                <i class="las la-file-signature"></i>
+                <h3>Contratos</h3>
+            </a>
+            <a href="/">
+                <i class="las la-cog"></i>
+                <h3>Configurações</h3>
+            </a>
+            <a href="/logout">
+                <i class="las la-sign-out-alt"></i>
+                <h3>Logout</h3>
+            </a>
+        </div>
+    </aside>
+    <!-- FIM DA BARRA LATERAL ESQUERDA -->
+
+    <!-- CONTEÚDO PRINCIPAL -->
+    <main>
+        <h1>Consultar Registros</h1>
+
+        {% with messages = get_flashed_messages() %}
+        {% if messages %}
+        <div class="alert alert-dark">
+            <ul class=flashes>
+                {% for message in messages %}
+                <li>{{ message }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+        {% endwith %}
+
+
+        <div class="input-data">
+            <h2>Consultar Clientes</h2>
+        
+            <div class="form" id="form-consulta-cliente">
+                <div class="input-group">
+                    <div class="input-box-long">
+                        <label for="input-nome-ou-cpf">Nome Completo, CPF ou Benefício</label>
+                        <input type="text" id="input-nome-ou-cpf" name="input-nome-ou-cpf" list="datalist-nomes">
+                        <datalist id="datalist-nomes"></datalist>
+                    </div>
+                </div>
+        
+                <div class="send-button">
+                    <button id="search-button" onclick="consultaCliente()"><span>Consultar</span></button>
+                </div>
+            </div>
+        </div>
+
+
+        <div class="content" id="ajax-content"></div>
+        <div class="loader" style="display:none;"></div>
+
+    </main>
+    <!-- FIM DO CONTEÚDO PRINCIPAL -->
+
+    <!-- CONTEÚDO DO LADO DIREITO -->
+    <div class="right">
+        <!-- INÍCIO TOPO -->
+        <div class="top">
+            <button id="menu-btn">
+                <i class="las la-bars"></i>
+            </button>
+            <div class="theme-toggler">
+                <span class="material-icons-sharp">light_mode</span>
+                <span class="material-icons-sharp active">dark_mode</span>
+            </div>
+            <div class="profile">
+                <div class="info">
+                    {% if current_user.is_authenticated %}
+                        <p>Olá, <b>{{ current_user.name }}</b></p> 
+                    <small class="text-muted">{{ current_user.hierarchy }}</small>
+                    {% endif %}
+                </div>
+                <div class="profile-photo">
+                    <img src="{{ url_for('static', filename='images/profile.webp') }}">>
+                </div>
+            </div>
+        </div>
+        <!-- FIM TOPO -->
+
+       
+    </div>
+    <!-- FIM DO CONTEÚDO DO LADO DIREITO -->
+</div>
+
+{% endblock %}

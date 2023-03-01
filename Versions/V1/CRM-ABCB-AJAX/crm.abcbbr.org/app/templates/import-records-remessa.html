@@ -1,0 +1,152 @@
+<title>Importar Registros &lsaquo; ACBC</title>
+
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="container">
+    <!-- BARRA LATERAL ESQUERDA -->
+    <aside>
+        <div class="top">
+            <div class="logo">
+                <img class="logo">
+            </div>
+            <div class="close" id="close-btn">
+                <span class="material-icons-sharp">close</span>
+            </div>
+        </div>
+
+        <div class="sidebar">
+            <a href="/dashboard">
+                <span class="material-icons-sharp">grid_view</span>
+                <h3>Visão Geral</h3>
+            </a>
+            <a href="/">
+                <i class="las la-certificate"></i>
+                <h3>Autenticar</h3>
+            </a>
+            <a href="/records" class="active">
+                <i class="las la-folder"></i>
+                <h3>Registros</h3>
+            </a>
+            <a href="/">
+                <i class="las la-file-signature"></i>
+                <h3>Contratos</h3>
+            </a>
+            <a href="/">
+                <i class="las la-cog"></i>
+                <h3>Configurações</h3>
+            </a>
+            <a href="/logout">
+                <i class="las la-sign-out-alt"></i>
+                <h3>Logout</h3>
+            </a>
+        </div>
+    </aside>
+    <!-- FIM DA BARRA LATERAL ESQUERDA -->
+
+    <!-- CONTEÚDO PRINCIPAL -->
+    <main>
+        <h1>Importar Registros</h1>
+
+        <div class="alert alert-upload alert-dark" id="alert-upload">
+            <span class="warning">AGUARDE</span> &lsaquo; Seu arquivo está sendo enviado. O tempo pode variar conforme a
+            quantidade de Registros.
+        </div>
+
+        <div class="alert alert-success alert-dark" id="alert-success">
+            REGISTRO &lsaquo; Importado com Sucesso.
+        </div>
+
+        <div class="alert alert-error alert-dark" id="alert-erro">
+            ATENÇÃO &lsaquo; Seu arquivo não foi enviado, verifique-o e tente
+            novamente.
+        </div>
+
+        {% with messages = get_flashed_messages() %}
+        {% if messages %}
+        <div class="alert alert-dark">
+            <ul class=flashes>
+                {% for message in messages %}
+                <li>{{ message }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+        {% endwith %}
+
+
+        <div class="input-data">
+            <h2>Importar Remessa</h2>
+
+            <div class="form" id="post-register-form">
+                <form method="post" enctype="multipart/form-data" action="/import/import-remessa">
+                    {{ form.csrf_token }}
+                    <div class="input-group">
+                        <div class="input-box">
+                            <label for="file">Arquivo:</label>
+                            {{ form.files }}
+                        </div>
+                    </div>
+
+                    <div class="send-button btn-alert">
+                        <button type="submit"><span>Importar</span></button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- {% set response = get_flashed_messages() %}
+        {% if response %}
+            <h1>{{ response }}</h1>
+        {% endif %} -->
+
+        <!-- <div class="pop-up">
+            <div class="box">
+                <a class="button" href="#popup1">Let me Pop up</a>
+            </div>
+            
+            <div id="popup1" class="overlay">
+                <div class="popup">
+                    <h2>Here i am</h2>
+                    <a class="close" href="#">&times;</a>
+                    <div class="content">
+                        Thank to pop me out of that button, but now i'm done so you can close this window.
+                    </div>
+                </div>
+            </div>
+        </div> -->
+
+    </main>
+    <!-- FIM DO CONTEÚDO PRINCIPAL -->
+
+    <!-- CONTEÚDO DO LADO DIREITO -->
+    <div class="right">
+        <!-- INÍCIO TOPO -->
+        <div class="top">
+            <button id="menu-btn">
+                <i class="las la-bars"></i>
+            </button>
+            <div class="theme-toggler">
+                <span class="material-icons-sharp">light_mode</span>
+                <span class="material-icons-sharp active">dark_mode</span>
+            </div>
+            <div class="profile">
+                <div class="info">
+                    {% if current_user.is_authenticated %}
+                    <p>Olá, <b>{{ current_user.name }}</b></p>
+                    <small class="text-muted">{{ current_user.hierarchy }}</small>
+                    {% endif %}
+                </div>
+                <div class="profile-photo">
+                    <img src="{{ url_for('static', filename='images/profile.webp') }}">>
+                </div>
+            </div>
+        </div>
+        <!-- FIM TOPO -->
+
+    </div>
+    <!-- FIM DO CONTEÚDO DO LADO DIREITO -->
+</div>
+
+{% endblock %}
