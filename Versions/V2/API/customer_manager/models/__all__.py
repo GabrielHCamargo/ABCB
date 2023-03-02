@@ -4,3 +4,4 @@ from models.customer import CustomerModel
 from models.benefit import BenefitModel
 from models.discount import DiscountModel
 from models.customer_event import CustomersEventsModel
+from models.ticket import TicketModel
