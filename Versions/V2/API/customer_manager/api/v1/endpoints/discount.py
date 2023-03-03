@@ -9,7 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.deps import get_session
 # from services.request_event import create_request_events
-from services.customer import create_discounts
+from services.discount import create_discounts
 
 
 # Bypass warning SQLModel select

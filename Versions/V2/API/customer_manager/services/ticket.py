@@ -72,7 +72,7 @@ async def read_tickets_by_customer(customer_id, db):
             return tickets
         
         else:
-            return [None]
+            return []
     
         # FINALIZA O EVENTO DE REQUISIÇÃO
         # await finished_request_events(db, creator_user, "customers")
@@ -80,6 +80,8 @@ async def read_tickets_by_customer(customer_id, db):
 
 
 async def update_ticket(ticket_id, ticket, db):
+    creator_user = ticket["creator_user"]
+
     async with db as session:
         ticket_update: TicketModel = TicketModel.parse_obj(ticket["data"])
 
