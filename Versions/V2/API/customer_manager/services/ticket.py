@@ -61,6 +61,24 @@ async def read_ticket(ticket_id, db):
         # await finished_request_events(db, creator_user, "customers")
 
 
+async def read_tickets_by_customer(customer_id, db):
+    async with db as session:
+        query_tickets = select(TicketModel).where(TicketModel.customer_id == customer_id)
+        result_tickets = await session.execute(query_tickets)
+        tickets = result_tickets.scalars().all()
+        
+        if tickets:
+
+            return tickets
+        
+        else:
+            return [None]
+    
+        # FINALIZA O EVENTO DE REQUISIÇÃO
+        # await finished_request_events(db, creator_user, "customers")
+
+
+
 async def update_ticket(ticket_id, ticket, db):
     async with db as session:
         ticket_update: TicketModel = TicketModel.parse_obj(ticket["data"])

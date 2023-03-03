@@ -10,6 +10,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from core.deps import get_session
 # from services.request_event import create_request_events
 from services.customer import create_customers_with_benefits
+from services.customer import read_customer
 
 
 # Bypass warning SQLModel select
@@ -32,3 +33,14 @@ async def post_customers(customers: Dict, background_tasks: BackgroundTasks, db:
     background_tasks.add_task(create_customers_with_benefits, customers, db)
 
     return {"msg": "processed data"}
+
+
+# GET Customer
+@router.get("/{customer_id}", status_code=status.HTTP_200_OK, response_model=Dict)
+async def get_ticket(customer_id: int, db: AsyncSession = Depends(get_session)):
+    # INICIO O EVENTO DE REQUISIÇÃO
+    # background_tasks.add_task(create_request_events, db, "customers", "POST", customers["creator_user"], "started")
+    
+    customer = await read_customer(customer_id, db)
+
+    return {"msg": customer}
