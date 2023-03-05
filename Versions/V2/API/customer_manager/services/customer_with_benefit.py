@@ -32,6 +32,8 @@ async def create_customers_with_benefits(customers, db):
             customer: CustomerModel = CustomerModel.parse_obj(obj["customer"])
             benefit: BenefitModel = BenefitModel.parse_obj(obj["benefit"])
 
+            benefit.status_description = "Aguardando inclus\u00E3o"
+            benefit.status = "awaiting_inclusion"
 
             query_existing_customer = select(CustomerModel).where(CustomerModel.cpf == customer.cpf)
             result_existing_customer = await session.execute(query_existing_customer)
@@ -39,12 +41,13 @@ async def create_customers_with_benefits(customers, db):
 
             if not existing_customer:
                 # Adiciona o novo cliente
-                new_customer: CustomerModel = CustomerModel(name=customer.name, cpf=customer.cpf, rg=customer.rg)
+                new_customer: CustomerModel = customer
                 session.add(new_customer)
                 await session.flush()
 
                 # Adiciona o novo benefício
-                new_benefit: BenefitModel = BenefitModel(customer_id=new_customer.id, nb=benefit.nb, status_description=benefit.status_description, status=benefit.status)
+                benefit.customer_id = new_customer.id
+                new_benefit: BenefitModel = benefit
                 session.add(new_benefit)
 
                 # Adiciona o novo evento
@@ -70,7 +73,8 @@ async def create_customers_with_benefits(customers, db):
 
                 if not existing_benefit:
                     # Adiciona o novo beneficio
-                    new_benefit: BenefitModel = BenefitModel(customer_id=existing_customer.id, nb=benefit.nb, status_description=benefit.status_description, status=benefit.status)
+                    benefit.customer_id = existing_customer.id
+                    new_benefit: BenefitModel = benefit
                     session.add(new_benefit)
 
                     # Adiciona o novo evento

@@ -74,6 +74,7 @@ async def update_benefits(benefits, db):
 
 
 async def update_benefit(benefit_id, benefit, db):
+    event_customer = await customers_events(db, "benefit", "update")
     creator_user = benefit["creator_user"]
 
     async with db as session:
@@ -86,6 +87,18 @@ async def update_benefit(benefit_id, benefit, db):
         if existing_benefit:
             for field, value in benefit_update.dict(exclude_unset=True).items():
                 setattr(existing_benefit, field, value)
+            
+            # Novo evento
+            new_customer_event: CustomersEventsModel = CustomersEventsModel(
+                customer_id=existing_benefit.customer_id,
+                nb=existing_benefit.nb,
+                manipulated_object=event_customer.manipulated_object,
+                event_ocurred=event_customer.event_ocurred,
+                event_description=event_customer.event_description,
+                creator_user=creator_user,
+                creation_date=datetime.date.today()
+            )
+            session.add(new_customer_event)
 
             await session.commit()
 

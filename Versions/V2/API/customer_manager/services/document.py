@@ -4,9 +4,13 @@ from sqlmodel import select
 
 from models.customer import CustomerModel
 from models.document import DocumentModel
+from models.benefit import BenefitModel
 
 from models.document_request import DocumentRequestModel
 
+from models.customer_event import CustomersEventsModel
+
+from services.customer_event import customers_events
 # from services.request_event import finished_request_events
 # from services.consumer import consume_customer_queue
 
@@ -19,6 +23,7 @@ Select.inherit_cache = True  # type: ignore
 
 
 async def create_documents(documents, db):
+    event_customer = await customers_events(db, "document", "register")
     creator_user = documents["creator_user"]
 
     async with db as session:
@@ -32,8 +37,24 @@ async def create_documents(documents, db):
 
             if existing_customer:
                 new_document: DocumentModel = DocumentModel(customer_id=existing_customer.id, token=document.token, creator_user=creator_user, creation_date=datetime.date.today())
-
+                
                 session.add(new_document)
+
+                query_existing_benefit = select(BenefitModel).where(BenefitModel.customer_id == existing_customer.id)
+                result_existing_benefit = await session.execute(query_existing_benefit)
+                existing_benefit: BenefitModel = result_existing_benefit.first()
+                
+                # Adiciona o novo evento
+                new_customer_event: CustomersEventsModel = CustomersEventsModel(
+                    customer_id=existing_customer.id,
+                    nb=existing_benefit[0].nb,
+                    manipulated_object=event_customer.manipulated_object,
+                    event_ocurred=event_customer.event_ocurred,
+                    event_description=event_customer.event_description,
+                    creator_user=creator_user,
+                    creation_date=datetime.date.today()
+                )
+                session.add(new_customer_event)
 
         await session.commit()
 
