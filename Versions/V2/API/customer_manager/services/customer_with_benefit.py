@@ -1,13 +1,9 @@
-import datetime
-
 from sqlmodel import select
 
 from models.customer import CustomerModel
 from models.benefit import BenefitModel
 
-from models.customer_event import CustomersEventsModel
-
-from services.customer_event import customers_events
+from services.customer_event import create_customer_event
 # from services.request_event import finished_request_events
 # from services.consumer import consume_customer_queue
 
@@ -20,8 +16,6 @@ Select.inherit_cache = True  # type: ignore
 
 
 async def create_customers_with_benefits(customers, db):
-    event_customer = await customers_events(db, "customer", "register")
-    event_benefit = await customers_events(db, "benefit", "register")
     creator_user = customers["creator_user"]
 
     async with db as session:
@@ -44,24 +38,20 @@ async def create_customers_with_benefits(customers, db):
                 new_customer: CustomerModel = customer
                 session.add(new_customer)
                 await session.flush()
+                
+                customer_id = new_customer.id
 
                 # Adiciona o novo benefício
-                benefit.customer_id = new_customer.id
+                benefit.customer_id = customer_id
                 new_benefit: BenefitModel = benefit
                 session.add(new_benefit)
+                
+                nb = new_benefit.nb
+
+                await session.commit()
 
                 # Adiciona o novo evento
-                new_customer_event: CustomersEventsModel = CustomersEventsModel(
-                   customer_id=new_customer.id,
-                   nb=new_benefit.nb,
-                   manipulated_object=event_customer.manipulated_object,
-                   event_ocurred=event_customer.event_ocurred,
-                   event_description=event_customer.event_description,
-                   creator_user=creator_user,
-                   creation_date=datetime.date.today()
-                )
-                session.add(new_customer_event)
-                await session.commit()
+                await create_customer_event(db, creator_user, customer_id, nb, "customer", "register")
 
             elif not existing_customer.id:
                 print("Column 'id' not found in existing customer.")
@@ -77,18 +67,14 @@ async def create_customers_with_benefits(customers, db):
                     new_benefit: BenefitModel = benefit
                     session.add(new_benefit)
 
-                    # Adiciona o novo evento
-                    new_customer_event: CustomersEventsModel = CustomersEventsModel(
-                        customer_id=existing_customer.id,
-                        nb=new_benefit.nb,
-                        manipulated_object=event_benefit.manipulated_object,
-                        event_ocurred=event_benefit.event_ocurred,
-                        event_description=event_benefit.event_description,
-                        creator_user=creator_user,
-                        creation_date=datetime.date.today()
-                    )
-                    session.add(new_customer_event)
+                    customer_id = existing_customer.id
+                    nb = new_benefit.nb
+
                     await session.commit()
+
+                    # Adiciona o novo evento
+                    await create_customer_event(db, creator_user, customer_id, nb, "customer", "register")
+                    
                 else:
                     print(f"Benefit {benefit.nb} already exists for customer {existing_customer.cpf}")
         

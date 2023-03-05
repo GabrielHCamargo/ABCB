@@ -16,8 +16,29 @@ Select.inherit_cache = True  # type: ignore
 # Fim Bypass
 
 
-async def create_customer_event(db, creator_user, customer_id, nb, object, event, requested=None):
+async def create_customer_event(db, creator_user, customer_id, nb, object, event, requested=None, inss_return=None, status_code=None):
 
+    if inss_return:
+        events = [await customers_events(db, "inss_return", status) for status in ["activated", "error", "canceled"]]
+    
+        async with db as session:
+            inss_event = next((inss for inss in events if inss.event_ocurred == status_code.status), None)
+
+            if inss_event:
+                new_customer_event = CustomersEventsModel(
+                    customer_id=customer_id,
+                    nb=nb,
+                    manipulated_object=inss_event.manipulated_object,
+                    event_ocurred=inss_event.event_ocurred,
+                    event_description=inss_event.event_description,
+                    creator_user=creator_user,
+                    creation_date=datetime.date.today()
+                )
+            session.add(new_customer_event)
+            await session.commit()
+
+        return True
+    
     event = await customers_events(db, object, event, requested)
 
     async with db as session:
@@ -25,13 +46,15 @@ async def create_customer_event(db, creator_user, customer_id, nb, object, event
             customer_id=customer_id,
             nb=nb,
             manipulated_object=event.manipulated_object,
-            event_occured=event.event_occured,
+            event_ocurred=event.event_ocurred,
             event_description=event.event_description,
             creator_user=creator_user,
             creation_date=datetime.date.today()
         )
         session.add(new_customer_event)
         await session.commit()
+    
+    return True
         
 
 async def customers_events(db, object, event, requested=None):

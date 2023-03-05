@@ -8,9 +8,7 @@ from models.benefit import BenefitModel
 
 from models.document_request import DocumentRequestModel
 
-from models.customer_event import CustomersEventsModel
-
-from services.customer_event import customers_events
+from services.customer_event import create_customer_event
 # from services.request_event import finished_request_events
 # from services.consumer import consume_customer_queue
 
@@ -23,7 +21,6 @@ Select.inherit_cache = True  # type: ignore
 
 
 async def create_documents(documents, db):
-    event_customer = await customers_events(db, "document", "register")
     creator_user = documents["creator_user"]
 
     async with db as session:
@@ -43,20 +40,15 @@ async def create_documents(documents, db):
                 query_existing_benefit = select(BenefitModel).where(BenefitModel.customer_id == existing_customer.id)
                 result_existing_benefit = await session.execute(query_existing_benefit)
                 existing_benefit: BenefitModel = result_existing_benefit.first()
-                
-                # Adiciona o novo evento
-                new_customer_event: CustomersEventsModel = CustomersEventsModel(
-                    customer_id=existing_customer.id,
-                    nb=existing_benefit[0].nb,
-                    manipulated_object=event_customer.manipulated_object,
-                    event_ocurred=event_customer.event_ocurred,
-                    event_description=event_customer.event_description,
-                    creator_user=creator_user,
-                    creation_date=datetime.date.today()
-                )
-                session.add(new_customer_event)
 
-        await session.commit()
+                await session.commit()
+
+                customer_id = existing_customer.id
+                nb = existing_benefit[0].nb
+                
+                # Adiciona evento
+                await create_customer_event(db, creator_user, customer_id, nb, "document", "register")
+
 
     # FINALIZA O EVENTO DE REQUISIÇÃO
     # await finished_request_events(db, creator_user, "documents")

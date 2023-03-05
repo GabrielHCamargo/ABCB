@@ -9,9 +9,7 @@ from models.ticket import TicketModel
 from models.customer import CustomerModel
 from models.benefit import BenefitModel
 
-from models.customer_event import CustomersEventsModel
-
-from services.customer_event import customers_events
+from services.customer_event import create_customer_event
 
 # Bypass warning SQLModel select
 from sqlmodel.sql.expression import Select, SelectOfScalar
@@ -23,10 +21,7 @@ Select.inherit_cache = True  # type: ignore
 
 async def create_ticket(ticket, db):
     creator_user = ticket["creator_user"]
-    ticket: TicketModel = TicketModel.parse_obj(ticket["data"])
-
-    event_customer = await customers_events(db, None, "register", requested=ticket.requested_event)
-    
+    ticket: TicketModel = TicketModel.parse_obj(ticket["data"])  
     
     async with db as session:
         query_existing_customer = select(CustomerModel).where(CustomerModel.cpf == ticket.cpf)
@@ -40,23 +35,17 @@ async def create_ticket(ticket, db):
 
             session.add(ticket)
 
+            await session.commit()
+
             query_existing_benefit = select(BenefitModel).where(BenefitModel.customer_id == existing_customer.id)
             result_existing_benefit = await session.execute(query_existing_benefit)
             existing_benefit: BenefitModel = result_existing_benefit.first()
+
+            customer_id = existing_customer.id
+            nb = existing_benefit[0].nb
             
             # Novo Evento
-            new_customer_event: CustomersEventsModel = CustomersEventsModel(
-                customer_id=existing_customer.id,
-                nb=existing_benefit[0].nb,
-                manipulated_object=event_customer.manipulated_object,
-                event_ocurred=event_customer.event_ocurred,
-                event_description=event_customer.event_description,
-                creator_user=creator_user,
-                creation_date=datetime.date.today()
-            )
-            session.add(new_customer_event)
-
-            await session.commit()
+            await create_customer_event(db, creator_user, customer_id, nb, None, "register", requested=ticket.requested_event)
 
             return ticket
 
@@ -89,9 +78,6 @@ async def update_ticket(ticket_id, ticket, db):
     creator_user = ticket["creator_user"]
     ticket_update: TicketModel = TicketModel.parse_obj(ticket["data"])
 
-    event_customer = await customers_events(db, None, ticket_update.status, requested=ticket_update.requested_event)
-    print(event_customer)
-
     async with db as session:
         query = select(TicketModel).where(TicketModel.id == ticket_id)
         result = await session.execute(query)
@@ -102,19 +88,13 @@ async def update_ticket(ticket_id, ticket, db):
             for field, value in ticket_update.dict(exclude_unset=True).items():
                 setattr(ticket, field, value)
 
-            # Novo Evento
-            new_customer_event: CustomersEventsModel = CustomersEventsModel(
-                customer_id=ticket.customer_id,
-                nb=ticket.nb,
-                manipulated_object=event_customer.manipulated_object,
-                event_ocurred=event_customer.event_ocurred,
-                event_description=event_customer.event_description,
-                creator_user=creator_user,
-                creation_date=datetime.date.today()
-            )
-            session.add(new_customer_event)
-
             await session.commit()
+
+            customer_id = ticket.customer_id
+            nb = ticket.nb
+            
+            # Novo Evento
+            await create_customer_event(db, creator_user, customer_id, nb, None, ticket_update.status, requested=ticket_update.requested_event)
 
             return ticket
 
@@ -126,6 +106,8 @@ async def update_ticket(ticket_id, ticket, db):
 
 
 async def del_ticket(ticket_id, db):
+    creator_user = "PEDIR PARA O GABRIEL ARRUMAR"
+    
     async with db as session:
         query = select(TicketModel).where(TicketModel.id == ticket_id)
         result = await session.execute(query)
@@ -134,9 +116,15 @@ async def del_ticket(ticket_id, db):
 
         if ticket:
             
-            ticket.status = "finished"
+            ticket.status = "authorized"
 
             await session.commit()
+
+            customer_id = ticket.customer_id
+            nb = ticket.nb
+            
+            # Novo Evento
+            await create_customer_event(db, creator_user, customer_id, nb, None, ticket.status, requested=ticket.requested_event)
 
             return ticket
         

@@ -1,5 +1,3 @@
-import datetime
-
 from fastapi import status
 from fastapi import HTTPException
 
@@ -7,11 +5,9 @@ from sqlmodel import select
 
 from models.benefit import BenefitModel
 
-from models.customer_event import CustomersEventsModel
-
 from models.benefit_request import BenefitRequestModel
 
-from services.customer_event import customers_events
+from services.customer_event import create_customer_event
 from services.status_codes import status_codes
 # from services.request_event import finished_request_events
 # from services.consumer import consume_customer_queue
@@ -25,13 +21,11 @@ Select.inherit_cache = True  # type: ignore
 
 
 async def update_benefits(benefits, db):
-    inss_return = [await customers_events(db, "inss_return", status) for status in ["activated", "error", "canceled"]]
-
     status_codes_list = await status_codes(db)
     creator_user = benefits["creator_user"]
 
     # criar dicionário que mapeia as tuplas (operation, result, error) para instâncias de StatusCodeModel
-    status_codes_dict = {(s.operation_code, s.result_code, s.error_code): s for s in status_codes_list}
+    # status_codes_dict = {(s.operation_code, s.result_code, s.error_code): s for s in status_codes_list}
 
     async with db as session:
         
@@ -39,7 +33,11 @@ async def update_benefits(benefits, db):
             benefit: BenefitRequestModel = BenefitRequestModel.parse_obj(obj)
 
             # verificar se a tupla de valores do benefício está no dicionário de status_codes
-            status_code = status_codes_dict.get((benefit.operation, benefit.result, benefit.error))
+            # status_code = status_codes_dict.get((benefit.operation, benefit.result, benefit.error))
+            status_code: None
+            for code in status_codes_list:
+                if code.operation_code == benefit.operation and code.result_code == benefit.result and code.error_code == benefit.error:
+                    status_code = code
 
             query_existing_benefit = select(BenefitModel).where(BenefitModel.nb == benefit.nb)
             result_existing_benefit = await session.execute(query_existing_benefit)
@@ -48,33 +46,23 @@ async def update_benefits(benefits, db):
             if existing_benefit:
                 existing_benefit.discount = benefit.discount
                 existing_benefit.start_date = benefit.start_date
-                existing_benefit.status_description = status_code.code_description
-                existing_benefit.status = status_code.status
+
+                await session.commit()
+
+                customer_id = existing_benefit.customer_id
+                nb = customer_id
 
                 # Novo evento
-                inss_event = next((inss for inss in inss_return if inss.event_ocurred == status_code.status), None)
-
-                if inss_event:
-                    new_customer_event = CustomersEventsModel(
-                        customer_id=existing_benefit.customer_id,
-                        nb=existing_benefit.nb,
-                        manipulated_object=inss_event.manipulated_object,
-                        event_ocurred=inss_event.event_ocurred,
-                        event_description=inss_event.event_description,
-                        creator_user=creator_user,
-                        creation_date=datetime.date.today()
-                    )
-
-                    session.add(new_customer_event)
+                await create_customer_event(db, creator_user, customer_id, nb, None, None, inss_return=True, status_code=status_code)
                 
-                await session.commit()
 
     # FINALIZA O EVENTO DE REQUISIÇÃO
     # await finished_request_events(db, creator_user, "benefits")
 
 
+
+
 async def update_benefit(benefit_id, benefit, db):
-    event_customer = await customers_events(db, "benefit", "update")
     creator_user = benefit["creator_user"]
 
     async with db as session:
@@ -87,20 +75,14 @@ async def update_benefit(benefit_id, benefit, db):
         if existing_benefit:
             for field, value in benefit_update.dict(exclude_unset=True).items():
                 setattr(existing_benefit, field, value)
-            
-            # Novo evento
-            new_customer_event: CustomersEventsModel = CustomersEventsModel(
-                customer_id=existing_benefit.customer_id,
-                nb=existing_benefit.nb,
-                manipulated_object=event_customer.manipulated_object,
-                event_ocurred=event_customer.event_ocurred,
-                event_description=event_customer.event_description,
-                creator_user=creator_user,
-                creation_date=datetime.date.today()
-            )
-            session.add(new_customer_event)
 
             await session.commit()
+
+            customer_id = existing_benefit.customer_id
+            nb = existing_benefit.nb
+            
+            # Novo evento
+            await create_customer_event(db, creator_user, customer_id, nb, "benefit", "update")
 
             return existing_benefit
 
