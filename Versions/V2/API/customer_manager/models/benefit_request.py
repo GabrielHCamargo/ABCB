@@ -18,5 +18,13 @@ class BenefitRequestModel(SQLModel, table=False):
 
     def __init__(self, **data):
         if "start_date" in data:
-            data["start_date"] = datetime.date.fromisoformat(data["start_date"])
+            start_date = data["start_date"]
+            if start_date == 0:
+                start_date = None
+            else:
+                try:
+                    start_date = datetime.date.fromisoformat(start_date)
+                except ValueError:
+                    start_date = None
+            data["start_date"] = start_date
         super().__init__(**data)

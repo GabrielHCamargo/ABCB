@@ -32,4 +32,6 @@ class BenefitModel(SQLModel, table=True):
     def __init__(self, **data):
         if "dib" in data and data["dib"] is not None:
             data["dib"] = datetime.date.fromisoformat(data["dib"])
+        if "nb" in data and data["nb"] is not None:
+            data["nb"] = "{:0>10}".format(int(data["nb"]))
         super().__init__(**data)

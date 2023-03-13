@@ -36,8 +36,15 @@ async def create_documents(documents, db: AsyncSession):
             existing_customer: CustomerModel = result_existing_customer.scalar_one_or_none()
 
             if existing_customer:
+
                 # Se já existir um cliente com o CPF, adiciona o novo documento ao cliente
-                new_document: DocumentModel = DocumentModel(customer_id=existing_customer.id, token=document.token, user_id=user_id, creation_date=datetime.date.today())
+                new_document: DocumentModel = DocumentModel(
+                    customer_id=existing_customer.id,
+                    user_id=user_id,
+                    token=document.token, 
+                    url=document.url,
+                    creation_date=datetime.date.today(),
+                )
                 
                 session.add(new_document)
 

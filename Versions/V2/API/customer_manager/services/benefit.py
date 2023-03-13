@@ -53,7 +53,7 @@ async def update_benefits(benefits, db: AsyncSession):
                 await session.commit() # commit as mudanças na base de dados
 
                 customer_id = existing_benefit.customer_id
-                nb = customer_id
+                nb = existing_benefit.nb
 
                 # cria um novo evento de cliente na base de dados
                 await create_customer_event(db, user_id, customer_id, nb, None, None, inss_return=True, status_code=status_code)
