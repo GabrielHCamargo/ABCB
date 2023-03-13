@@ -1,3 +1,4 @@
+import datetime
 from typing import Optional
 
 from sqlmodel import SQLModel
@@ -20,3 +21,12 @@ class CustomerModel(SQLModel, table=True):
     state: Optional[str]
     phone: Optional[str]
     entity: Optional[int]
+
+    @classmethod
+    def __init_subclass__(cls):
+        super().__init_subclass__()
+
+    def __init__(self, **data):
+        if "cpf" in data:
+            data["cpf"] = "{:0>11}".format(int(data["cpf"]))
+        super().__init__(**data)

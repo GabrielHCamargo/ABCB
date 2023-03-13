@@ -1,4 +1,9 @@
+from fastapi import status
+from fastapi import HTTPException
+
 from sqlmodel import select
+
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from models.customer import CustomerModel
 from models.benefit import BenefitModel
@@ -6,8 +11,7 @@ from models.discount import DiscountModel
 from models.document import DocumentModel
 
 from services.ticket import read_tickets_by_customer
-# from services.request_event import finished_request_events
-# from services.consumer import consume_customer_queue
+from services.customer_event import read_customer_event_by_customer
 
 # Bypass warning SQLModel select
 from sqlmodel.sql.expression import Select, SelectOfScalar
@@ -17,7 +21,7 @@ Select.inherit_cache = True  # type: ignore
 # Fim Bypass
 
 
-async def read_customer(customer_id, db):
+async def read_customer(customer_id, db: AsyncSession):
     async with db as session:
         query_customer = select(CustomerModel).where(CustomerModel.id == customer_id)
         result_customer = await session.execute(query_customer)
@@ -79,7 +83,14 @@ async def read_customer(customer_id, db):
             tickets_dict = [t.dict() for t in tickets]
             customer_with_benefits["tickets"] = tickets_dict
 
+            # Obter os eventos do cliente
+            customer_events = await read_customer_event_by_customer(customer_id, db)
+
+            # Adicionar os eventos ao dicionário de retorno
+            customer_events_dict = [e.dict() for e in customer_events]
+            customer_with_benefits["customer_events"] = customer_events_dict
+
             return customer_with_benefits
-        
-    # FINALIZA O EVENTO DE REQUISIÇÃO
-    # await finished_request_events(db, creator_user, "benefits")
+
+        else:
+            raise HTTPException(detail="customer not found", status_code=status.HTTP_404_NOT_FOUND)
