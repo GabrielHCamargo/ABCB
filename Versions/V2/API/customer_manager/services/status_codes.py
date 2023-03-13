@@ -1,5 +1,7 @@
 from sqlmodel import select
 
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from models.status_code import StatusCodeModel
 
 
@@ -11,9 +13,10 @@ Select.inherit_cache = True  # type: ignore
 # Fim Bypass
 
 
-async def status_codes(db):
+async def status_codes(db: AsyncSession):
     async with db as session:
-        query_customer_status_code = select(StatusCodeModel)
-        result_customer_status_code = await session.execute(query_customer_status_code)
-        status_codes = [row[0] for row in result_customer_status_code.all()]
-        return status_codes
+        # Seleciona todos os modelos StatusCodeModel
+        query = select(StatusCodeModel)
+        result = await session.execute(query)
+        # Retorna uma lista com os resultados da consulta
+        return [row[0] for row in result.all()]

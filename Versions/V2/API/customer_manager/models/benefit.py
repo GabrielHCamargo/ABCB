@@ -1,5 +1,7 @@
 from typing import Optional
 
+from pydantic import validator
+
 from sqlmodel import SQLModel
 from sqlmodel import Field
 
@@ -22,3 +24,12 @@ class BenefitModel(SQLModel, table=True):
     start_date: Optional[datetime.date]
     status_description: str
     status: str
+
+    @classmethod
+    def __init_subclass__(cls):
+        super().__init_subclass__()
+
+    def __init__(self, **data):
+        if "dib" in data and data["dib"] is not None:
+            data["dib"] = datetime.date.fromisoformat(data["dib"])
+        super().__init__(**data)

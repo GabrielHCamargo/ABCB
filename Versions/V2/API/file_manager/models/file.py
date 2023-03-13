@@ -10,7 +10,8 @@ class FileModel(SQLModel, table=True):
     __tablename__: str = "files"
 
     id: Optional[int] = Field(default=None, primary_key=True)
+    user_id: Optional[int] = Field(default=None, foreign_key="users.id")
     token: str
     file_type: str
-    creator_user: str
+    url: str
     creation_date: Optional[datetime.date]

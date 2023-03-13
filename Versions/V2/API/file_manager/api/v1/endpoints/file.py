@@ -1,57 +1,58 @@
+from typing import List
+
 from fastapi import APIRouter
 from fastapi import status
-from fastapi import HTTPException
+from fastapi import BackgroundTasks
 from fastapi import UploadFile
+from fastapi import Depends
+from fastapi import HTTPException
 
-from services.file import process_base
-from services.file import process_return
-from services.file import process_transfers
-
+from services.manager import common_manager
+from services.manager import document_manager
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.deps import get_session
-# from services.request_event import create_request_events
-
-
-# Bypass warning SQLModel select
-from sqlmodel.sql.expression import Select, SelectOfScalar
-
-SelectOfScalar.inherit_cache = True # type: ignore
-Select.inherit_cache = True  # type: ignore
-# Fim Bypass
 
 
 router: APIRouter = APIRouter()
 
 
 @router.post("/bases", status_code=status.HTTP_200_OK)
-async def post_file(file: UploadFile):
+async def post_base(file: UploadFile, background_tasks: BackgroundTasks, user_id: int = None, db: AsyncSession = Depends(get_session)):
     
-    processed_data = await process_base(file)
-
-    return {"creator_user": "user", "data": processed_data}
+    try:
+        background_tasks.add_task(common_manager, file, "base", user_id, db)
+        return {"msg": "received data"}
+    except:
+        raise HTTPException(detail="internal server error", status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 @router.post("/returns", status_code=status.HTTP_200_OK)
-async def post_file(file: UploadFile):
+async def post_return(file: UploadFile, background_tasks: BackgroundTasks, user_id: int = None, db: AsyncSession = Depends(get_session)):
     
-    processed_data = await process_return(file)
-
-    return {"creator_user": "user", "data": processed_data}
+    try:
+        background_tasks.add_task(common_manager, file, "return", user_id, db)
+        return {"msg": "received data"}
+    except:
+        raise HTTPException(detail="internal server error", status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 @router.post("/transfers", status_code=status.HTTP_200_OK)
-async def post_file(file: UploadFile):
+async def post_transfer(file: UploadFile, background_tasks: BackgroundTasks, user_id: int = None, db: AsyncSession = Depends(get_session)):
     
-    processed_data = await process_transfers(file)
-
-    return {"creator_user": "user", "data": processed_data}
+    try:
+        background_tasks.add_task(common_manager, file, "transfer", user_id, db)
+        return {"msg": "received data"}
+    except:
+        raise HTTPException(detail="internal server error", status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 @router.post("/documents", status_code=status.HTTP_200_OK)
-async def post_file(file: UploadFile):
+async def post_document(files: List[UploadFile], background_tasks: BackgroundTasks, user_id: int = None, db: AsyncSession = Depends(get_session)):
     
-    
-
-    return {"creator_user": "user", "data": "processed_data"}
+    try:
+        background_tasks.add_task(document_manager, files, "document", user_id, db)
+        return {"msg": "received data"}
+    except:
+        raise HTTPException(detail="internal server error", status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
