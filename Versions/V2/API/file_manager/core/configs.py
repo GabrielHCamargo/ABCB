@@ -17,11 +17,11 @@ class Settings(BaseSettings):
 
     SECRET_DOCUMENT_ENCRYPTION_KEY: str = "18446cee1bcb682fad4e546a0e5677ae04106128586e0a2188ef31c5a9f3d96b"
 
-    AWS_ACCESS_KEY_ID: str = "AKIA4DSU2AXE5NGOIM7R"
-    AWS_SECRET_ACCESS_KEY: str = "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"
-    AWS_REGION_NAME: str = "sa-east-1"
-    AWS_CDN_URL: str = "https://d2j6gyhat276ov.cloudfront.net"
-    AWS_BUCKET_NAME: str = "cdn.abcb"
+    AWS_ACCESS_KEY_ID: str = ""
+    AWS_SECRET_ACCESS_KEY: str = ""
+    AWS_REGION_NAME: str = ""
+    AWS_CDN_URL: str = ""
+    AWS_BUCKET_NAME: str = ""
     
     UPLOAD_TMP_DIR: str = "./.tmp"
     DELETE_UPLOADED_FILES_AFTER: int = 3600
